@@ -1,4 +1,4 @@
-from os.path import isfile, exists, join
+from os.path import isfile, exists, join, basename
 from os import getcwd
 from glob import glob
 from re import MULTILINE, finditer
@@ -26,14 +26,9 @@ def get_modules_needed_to_install(folder_path:str, skip_mock_paths:bool = True):
         folder_path = getcwd()
     if not exists(folder_path):
         raise ValueError(f"folder_path {folder_path} doesn't exist!")
-    if not skip_mock_paths:
-        file_paths = [
-            f for f in glob(f'{folder_path}/**/*', recursive=True) if isfile(f) and f[-3:] == '.py' and f[-8:] != '_test.py'
-        ]
-    else:
-        file_paths = [
-            f for f in glob(f'{folder_path}/**/*', recursive=True) if isfile(f) and f[-3:] == '.py' and f[-8:] != '_test.py' and 'mock' not in f
-        ]
+    file_paths = [f for f in glob(f'{folder_path}/**/*', recursive=True) if isfile(f) and f[-3:] == '.py' and not f.endswith('_test.py') and not basename(f).startswith('test_')]
+    if skip_mock_paths:
+        file_paths = [f for f in file_paths if 'mock' not in f]
     if not file_paths:
         CLIPPrinter.red(f'No py files found in {folder_path}!')
         return set()
@@ -43,7 +38,7 @@ def get_modules_needed_to_install(folder_path:str, skip_mock_paths:bool = True):
         CLIPPrinter.white(f"Checking file {file}")
         data = FileHandler.load(file_paths=file, load_first_value=True, progress_bar=False)
         matches = finditer(pattern, data, MULTILINE)
-        modules += [f.group(1) if f.group(1) else f.group(2) for f in matches]
+        modules += [f.group(1).lower() if f.group(1) else f.group(2).lower() for f in matches]
     modules = [f.split('.')[0] for f in modules]
     modules = [f for f in modules if f != '']
     modules = set(modules) - set(get_standard_python_libraries())
