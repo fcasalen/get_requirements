@@ -5,3 +5,4 @@
 */build/
 *.tar.gz
 build/
+.requirements_generated

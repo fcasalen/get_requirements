@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from pydantic import BaseModel
 from cli_pprinter import CLIPPrinter
 from file_handler import FileHandler
+from datetime import datetime, UTC
 from .get_standard_python_libraries import get_standard_python_libraries
 
 class CToolStringArgs(BaseModel):
@@ -68,6 +69,7 @@ def get_requirements(folder_path:str = None, write_requirements_file:bool = True
             new_requirements_packages |= new_packages_to_be_included
     if write_requirements_file:
         FileHandler.write({requirements_file_path: '\n'.join(sorted(new_requirements_packages))})
+    FileHandler.write({join(folder_path, '.requirements_generated'): f'{datetime.now(UTC).isoformat()}'})
     return PackagesInfo(
         needed_in_requirements_file=sorted(needed_in_requirements_file),
         already_in_requirements_file=sorted(already_in_requirements_file),
