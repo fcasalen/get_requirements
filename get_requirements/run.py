@@ -87,13 +87,17 @@ def get_requirements(folder_path:str = None, write_requirements_file:bool = True
     packages_not_needed_anymore = already_in_requirements_file - needed_in_requirements_file
     new_requirements_packages = already_in_requirements_file.copy()
     if packages_not_needed_anymore:
+        CLIPPrinter.line_breaker()
         CLIPPrinter.white(f'The following packages are in requirements.txt, but are not being imported in the project in folder {folder_path}: {", ".join(sorted(packages_not_needed_anymore))}.\n\nWould you like to remove them from requirements.txt? (y/n)')
+        CLIPPrinter.line_breaker()
         resposta = input()
         if resposta.lower() == 'y':
             new_requirements_packages -= packages_not_needed_anymore
     if new_packages_to_be_included:
-        text = '\n'.join([f'{k} ({", ".join(v)})' for k,v in needed_in_requirements_file_data.items() if k in sorted(new_packages_to_be_included)])
-        CLIPPrinter.white(f'The following packages are being imported in the project in folder {folder_path}, but are not in requirements.txt:\n{text}.\n\nWould you like to add them to requirements.txt? (y/n)')
+        text = '\n\n--'.join([f'{k}:\n----{"\n----".join(v)}' for k,v in needed_in_requirements_file_data.items() if k in sorted(new_packages_to_be_included)])
+        CLIPPrinter.line_breaker()
+        CLIPPrinter.white(f'The following packages are being imported in the project in folder {folder_path}, but are not in requirements.txt:\n\n--{text}.\n\nWould you like to add them to requirements.txt? (y/n)')
+        CLIPPrinter.line_breaker()
         resposta = input()
         if resposta.lower() == 'y':
             new_requirements_packages |= new_packages_to_be_included
@@ -118,7 +122,6 @@ def cli():
         folder_path = getcwd()
     else:
         folder_path = args.f
-    print('oxe', folder_path)
     CLIPPrinter.white(f'making requirements.txt based on folder {folder_path}!')
     packages_info = get_requirements(folder_path=folder_path, write_requirements_file=not args.dw, is_dev_requirements=args.is_dev)
     if not packages_info.new_packages_to_be_included:

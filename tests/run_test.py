@@ -12,7 +12,7 @@ mh.get_mocks_folder()
 def test_get_modules_needed_to_install():
     assert get_modules_needed_to_install(folder_path=mh.mocks_folder) == {
         'custom_module': [join(mh.mocks_folder, 'test2', 'test3.py')],
-        'fake_module_2': [join(mh.mocks_folder, 'test2', 'test2.py')],
+        'fake_module_2': [join(mh.mocks_folder, 'test2', 'test2.py'), join(mh.mocks_folder, 'test2', 'test5.py')],
         'fake_module_3': [join(mh.mocks_folder, 'test2', 'test3.py')]
     }
 
@@ -36,7 +36,7 @@ def test_test2_folder(capfd):
     assert result == PackagesInfo(
         needed_in_requirements_file_data={
             'custom_module': [join(mh.mocks_folder, 'test2', 'test3.py')],
-            'fake_module_2': [join(mh.mocks_folder, 'test2', 'test2.py')],
+            'fake_module_2': [join(mh.mocks_folder, 'test2', 'test2.py'), join(mh.mocks_folder, 'test2', 'test5.py')],
             'fake_module_3': [join(mh.mocks_folder, 'test2', 'test3.py')]
         },
         needed_in_requirements_file={'custom_module', 'fake_module_2', 'fake_module_3'},
@@ -45,9 +45,14 @@ def test_test2_folder(capfd):
         new_packages_to_be_included={'fake_module_2', 'fake_module_3'}
     )
     out, err = capfd.readouterr()
-    assert '\n'.join(out.strip().splitlines()[-5:]) == f'''The following packages are being imported in the project in folder {join(mh.mocks_folder, 'test2')}, but are not in requirements.txt:
-fake_module_2 ({join(mh.mocks_folder, 'test2', 'test2.py')})
-fake_module_3 ({join(mh.mocks_folder, 'test2', 'test3.py')}).
+    assert '\n'.join(out.strip().splitlines()[-12:-2]) == f'''The following packages are being imported in the project in folder {join(mh.mocks_folder, 'test2')}, but are not in requirements.txt:
+
+--fake_module_2:
+----{join(mh.mocks_folder, 'test2', 'test2.py')}
+----{join(mh.mocks_folder, 'test2', 'test5.py')}
+
+--fake_module_3:
+----{join(mh.mocks_folder, 'test2', 'test3.py')}.
 
 Would you like to add them to requirements.txt? (y/n)'''
     
@@ -57,7 +62,7 @@ def test_mocks_folder(capfd):
         result = get_requirements(folder_path=mh.mocks_folder, write_requirements_file=False)
     assert result == PackagesInfo(
         needed_in_requirements_file_data={
-            'fake_module_2': [join(mh.mocks_folder, 'test2', 'test2.py')],
+            'fake_module_2': [join(mh.mocks_folder, 'test2', 'test2.py'), join(mh.mocks_folder, 'test2', 'test5.py')],
             'fake_module_3': [join(mh.mocks_folder, 'test2', 'test3.py')],
             'custom_module': [join(mh.mocks_folder, 'test2', 'test3.py')]
         },
@@ -67,10 +72,17 @@ def test_mocks_folder(capfd):
         new_packages_to_be_included={'custom_module', 'fake_module_2', 'fake_module_3'}
     )
     out, err = capfd.readouterr()
-    assert '\n'.join(out.strip().splitlines()[-6:]) == f'''The following packages are being imported in the project in folder {mh.mocks_folder}, but are not in requirements.txt:
-fake_module_2 ({join(mh.mocks_folder, 'test2', 'test2.py')})
-fake_module_3 ({join(mh.mocks_folder, 'test2', 'test3.py')})
-custom_module ({join(mh.mocks_folder, 'test2', 'test3.py')}).
+    assert '\n'.join(out.strip().splitlines()[-15:-2]) == f'''The following packages are being imported in the project in folder {mh.mocks_folder}, but are not in requirements.txt:
+
+--fake_module_2:
+----{join(mh.mocks_folder, 'test2', 'test2.py')}
+----{join(mh.mocks_folder, 'test2', 'test5.py')}
+
+--fake_module_3:
+----{join(mh.mocks_folder, 'test2', 'test3.py')}
+
+--custom_module:
+----{join(mh.mocks_folder, 'test2', 'test3.py')}.
 
 Would you like to add them to requirements.txt? (y/n)'''
     
@@ -81,7 +93,7 @@ def test_mocks_folder_is_dev(capfd):
     assert result == PackagesInfo(
         needed_in_requirements_file_data={
             'cli_pprinter': [join(mh.mocks_folder, 'test2', 'main_test.py')],
-            'fake_module_2': [join(mh.mocks_folder, 'test2', 'test2.py')],
+            'fake_module_2': [join(mh.mocks_folder, 'test2', 'test2.py'), join(mh.mocks_folder, 'test2', 'test5.py')],
             'fake_module_3': [join(mh.mocks_folder, 'test2', 'test3.py')],
             'custom_module': [join(mh.mocks_folder, 'test2', 'test3.py')],
             'file_handler': [join(mh.mocks_folder, 'test2', 'test_main.py')]
@@ -92,12 +104,23 @@ def test_mocks_folder_is_dev(capfd):
         new_packages_to_be_included={'custom_module', 'fake_module_2', 'fake_module_3', 'cli_pprinter', 'file_handler'}
     )
     out, err = capfd.readouterr()
-    assert '\n'.join(out.strip().splitlines()[-8:]) == f'''The following packages are being imported in the project in folder {mh.mocks_folder}, but are not in requirements.txt:
-cli_pprinter ({join(mh.mocks_folder, 'test2', 'main_test.py')})
-fake_module_2 ({join(mh.mocks_folder, 'test2', 'test2.py')})
-fake_module_3 ({join(mh.mocks_folder, 'test2', 'test3.py')})
-custom_module ({join(mh.mocks_folder, 'test2', 'test3.py')})
-file_handler ({join(mh.mocks_folder, 'test2', 'test_main.py')}).
+    assert '\n'.join(out.strip().splitlines()[-21:-2]) == f'''The following packages are being imported in the project in folder {mh.mocks_folder}, but are not in requirements.txt:
+
+--cli_pprinter:
+----{join(mh.mocks_folder, 'test2', 'main_test.py')}
+
+--fake_module_2:
+----{join(mh.mocks_folder, 'test2', 'test2.py')}
+----{join(mh.mocks_folder, 'test2', 'test5.py')}
+
+--fake_module_3:
+----{join(mh.mocks_folder, 'test2', 'test3.py')}
+
+--custom_module:
+----{join(mh.mocks_folder, 'test2', 'test3.py')}
+
+--file_handler:
+----{join(mh.mocks_folder, 'test2', 'test_main.py')}.
 
 Would you like to add them to requirements.txt? (y/n)'''
 
