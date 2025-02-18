@@ -1,11 +1,8 @@
 from setuptools import setup, find_packages
 
-name = "get_requirements"
-version = "0.1.0"
-
 setup(
     name='get_requirements',
-    version='0.1.0',
+    version='0.1.1',
     license="GNU General Public License",
     author="fcasalen",
     author_email="fcasalen@gmail.com",
