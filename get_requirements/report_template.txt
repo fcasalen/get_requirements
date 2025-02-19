@@ -1,0 +1,31 @@
+____________________________________________________________________________________________________
+                                        BEGIN STANDARD REPORT
+
+Requirements assessment report for folder {folder_path}:
+
+****************************************************************************************************
+Packages in requirements.txt, but are not being imported or are standard python packages:{standard_packages_not_needed_anymore_text}
+****************************************************************************************************
+
+****************************************************************************************************
+Packages not in requirements.txt, but are being imported and are not standard python packages:{new_standard_packages_to_be_included_text}
+****************************************************************************************************
+
+________________________________________END STANDARD REPORT_________________________________________
+
+
+
+____________________________________________________________________________________________________
+                                         BEGIN DEV REPORT
+
+Requirements assessment report for folder {folder_path}:
+
+****************************************************************************************************
+Packages in requirements_dev.txt, but are not being imported or are standard python packages:{dev_packages_not_needed_anymore_text}
+****************************************************************************************************
+
+****************************************************************************************************
+Packages not in requirements_dev.txt, but are being imported and are not standard python packages:{new_dev_packages_to_be_included_text}
+****************************************************************************************************
+
+___________________________________________END DEV REPORT___________________________________________

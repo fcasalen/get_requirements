@@ -1,0 +1,40 @@
+____________________________________________________________________________________________________
+                                        BEGIN STANDARD REPORT
+
+Requirements assessment report for folder {folder_path}:
+
+****************************************************************************************************
+Packages in requirements.txt, but are not being imported or are standard python packages:
+--oxe: removed
+****************************************************************************************************
+
+****************************************************************************************************
+Packages not in requirements.txt, but are being imported and are not standard python packages:
+--fake_module_2: added
+--fake_module_3: added
+****************************************************************************************************
+
+________________________________________END STANDARD REPORT_________________________________________
+
+
+
+____________________________________________________________________________________________________
+                                         BEGIN DEV REPORT
+
+Requirements assessment report for folder {folder_path}:
+
+****************************************************************************************************
+Packages in requirements_dev.txt, but are not being imported or are standard python packages:
+No packages found in this situation!
+****************************************************************************************************
+
+****************************************************************************************************
+Packages not in requirements_dev.txt, but are being imported and are not standard python packages:
+--cli_pprinter: added
+--custom_module: added
+--fake_module_2: added
+--fake_module_3: added
+--file_handler: added
+****************************************************************************************************
+
+___________________________________________END DEV REPORT___________________________________________
