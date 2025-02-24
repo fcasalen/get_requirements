@@ -1,2 +1,3 @@
 include requirements.txt
 global-exclude *_test.py
+global-include report_template.txt
