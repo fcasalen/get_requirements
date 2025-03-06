@@ -15,6 +15,9 @@ get_requirements -dw
 #checking current directory and looking in all py files, including the test ones
 get_requirements -is_dev
 
+#checking current directory and looking in all py files, including the test ones, but not writing the .requirements_generated file
+get_requirements -dwg
+
 ```
 
 # Python
@@ -33,4 +36,7 @@ get_requirements(write_requirements_file=False)
 
 #checking current directory and looking in all py files, including the test ones
 get_requirements(is_dev_requirements=True)
+
+#checking current directory and looking in all py files, including the test ones, but not writing the .requirements_generated file
+get_requirements(write_requirements_generated=False)
 ```

@@ -22,6 +22,11 @@ def packages_in_files():
             files=[join(mh.mocks_folder, 'test2', 'test2.py'), join(mh.mocks_folder, 'test2', 'test5.py')],
             is_on_standard_files=True
         ),
+        'typing': Package(
+            files=[join(mh.mocks_folder, 'test2', 'test2.py')],
+            is_on_standard_files=True,
+            is_standard_module=True
+        ),
         'fake_module_3': Package(
             files=[join(mh.mocks_folder, 'test2', 'test3.py')],
             is_on_standard_files=True
@@ -79,15 +84,17 @@ def test_test2_folder(packages_in_files):
             write_requirements_generated=False
         )
     packages_in_files['custom_module'].is_on_requirements_file = True
+    packages_in_files['typing'].is_on_requirements_file = True
     packages_in_files['oxe'] = Package(files=[], is_on_requirements_file=True)
-    assert result.packages_in_files == PackagesInfo(
-        requirements_packages={'oxe', 'custom_module'},
-        requirements_dev_packages=set(),
+    packages_in_files['fake_module_2'].is_on_requirements_dev_file=True
+    assert result == PackagesInfo(
+        requirements_packages={'oxe', 'custom_module', 'typing'},
+        requirements_dev_packages={'fake_module_2'},
         packages_in_files=packages_in_files,
         new_requirements_packages={'custom_module', 'fake_module_2', 'fake_module_3'},
         new_requirements_dev_packages={'custom_module', 'fake_module_2', 'fake_module_3', 'cli_pprinter', 'file_handler'},
         report=mh.load_from_mocks_folder(join('test2', 'report_expected'), extension='txt').format(folder_path=join(mh.mocks_folder, 'test2'))
-    ).packages_in_files
+    )
     
 def test_mocks_folder(packages_in_files):
     inputs = iter(["y"] * 8)

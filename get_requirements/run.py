@@ -41,7 +41,7 @@ def get_modules_needed_to_install(folder_path:str, requirements_file_path:str, r
         already_in_requirements_file = set(FileHandler.load(requirements_file_path, load_first_value=True).splitlines())
     already_in_requirements_dev_file = set()
     if exists(requirements_dev_file_path):
-        already_in_requirements_dev_file = set(FileHandler.load(requirements_file_path, load_first_value=True).splitlines())
+        already_in_requirements_dev_file = set(FileHandler.load(requirements_dev_file_path, load_first_value=True).splitlines())
     file_paths = [f for f in glob(f'{folder_path}/**/*', recursive=True) if isfile(f) and f[-3:] == '.py']
     pi = PackagesInfo(
         requirements_packages=already_in_requirements_file,
@@ -91,30 +91,33 @@ def get_requirements(folder_path:str = None, write_requirements_file:bool = True
     """
     Assess packages being imported in py files inside a given folder in relation to the requirements.txt and requirements_dev.txt files.
     
-    User can choose to remove (if package is not being imported anymore but it's in requirements) or add (if package is being imported but not in requirements) packages to the requirements.txt and requirements_dev.txt files.
+    User can choose to remove (if package is not being imported anymore but it's in requirements) or add (if package is being imported 
+    but not in requirements) packages to the requirements.txt and requirements_dev.txt files.
     
-    Creates a report with the differences between the current requirements.txt and requirements_dev.txt and the new ones after considering the user's choices.
+    Creates a report with the differences between the current requirements.txt and requirements_dev.txt and the new ones after considering 
+    the user's choices.
 
     Args:
         folder_path (str, optional): folder_path to search in. Defaults to None (if None, will use current directory)
-        write_requirements_file (bool, optional): will write the requirements.txt file if True. Defaults to True.
+        write_requirements_file (bool, optional): will write the requirements.txt and requirements_dev.txt files if True. Defaults to True.
         requirements_file_path (str, optional): path to the requirements.txt file. Defaults to None (will use folder_path/requirements.txt)
         requirements_dev_file_path (str, optional): path to the requirements_dev.txt file. Defaults to None (will use folder_path/requirements_dev.txt
         write_requirements_generated (bool, optional): will write a file with the date and time the requirements were generated. Defaults to True.
         
     Returns:
-        PacakagesInfo: class with the following attributes:
-            requirements_packages (set): set with modules in requirements.txt
-            requirements_dev_packages (set): set with modules in requirements_dev.txt
-            new_requirements_packages (set): set with modules after considering the user's choices
-            new_requirements_dev_packages (set): set with modules for dev after considering the user's choices
-            report (str): text with the differences between the current requirements.txt and requirements_dev.txt and the new ones after considering the user's choices
-            packages_in_files (dict): dict with modules being imported in py files and the files they are being imported from with the following attributes:
-                files (list): list of files the module is being imported from
-                is_on_standard_files (bool): True if the module is being imported from a standard file
-                is_standard_module (bool): True if the module is a standard python module
-                is_on_requirements_file (bool): True if the module is in requirements.txt
-                is_on_requirements_dev_file (bool): True if the module is in requirements_dev.txt
+        PacakagesInfo:
+        class with the following attributes:
+            - requirements_packages (set): set with modules in requirements.txt
+            - requirements_dev_packages (set): set with modules in requirements_dev.txt
+            - new_requirements_packages (set): set with modules after considering the user's choices
+            - new_requirements_dev_packages (set): set with modules for dev after considering the user's choices
+            - report (str): text with the differences between the current requirements.txt and requirements_dev.txt and the new ones after considering the user's choices
+            - packages_in_files (dict): dict with modules being imported in py files and the files they are being imported from with the following attributes:
+                - files (list): list of files the module is being imported from
+                - is_on_standard_files (bool): True if the module is being imported from a standard file
+                - is_standard_module (bool): True if the module is a standard python module
+                - is_on_requirements_file (bool): True if the module is in requirements.txt
+                - is_on_requirements_dev_file (bool): True if the module is in requirements_dev.txt
     """
     if requirements_file_path is None:
         requirements_file_path = join(folder_path, 'requirements.txt')
@@ -129,12 +132,17 @@ def get_requirements(folder_path:str = None, write_requirements_file:bool = True
     new_standard_packages_to_be_included_text = "\nNo packages found in this situation!"
     dev_packages_not_needed_anymore_text = "\nNo packages found in this situation!"
     new_dev_packages_to_be_included_text = "\nNo packages found in this situation!"
-    standard_packages_not_needed_anymore = [k for k,v in pi.packages_in_files.items() if (not v.is_on_standard_files or v.is_standard_module) and v.is_on_requirements_file]
+    standard_packages_not_needed_anymore = {k:v for k,v in pi.packages_in_files.items() if (not v.is_on_standard_files or v.is_standard_module) and v.is_on_requirements_file}
     if standard_packages_not_needed_anymore:
         standard_packages_not_needed_anymore_text = ''
         for p in sorted(standard_packages_not_needed_anymore):
-            standard_packages_not_needed_anymore_text += f'\n--{p}: '
-            CLIPPrinter.yellow(f'{p}: Would you like to remove it from requirements.txt? (y/n)')
+            warn_text = 'Not found in py files that are not test files'
+            is_standard_warn_text = ''
+            if standard_packages_not_needed_anymore[p].is_standard_module:
+                warn_text = 'Is a standard python package and so, there is no need to be in requirements.txt'
+                is_standard_warn_text = "(standard python module)"
+            standard_packages_not_needed_anymore_text += f'\n--{p}{is_standard_warn_text}: '
+            CLIPPrinter.yellow(f'package {p}: {warn_text}. Would you like to remove it from requirements.txt? (y/n)')
             if input().lower() == 'y':
                 pi.new_requirements_packages.remove(p)
                 standard_packages_not_needed_anymore_text += 'removed'
@@ -145,7 +153,7 @@ def get_requirements(folder_path:str = None, write_requirements_file:bool = True
         new_standard_packages_to_be_included_text = ''
         for p in sorted(new_standard_packages_to_be_included):
             new_standard_packages_to_be_included_text += f'\n--{p}: '
-            CLIPPrinter.yellow(f'{p}: Would you like to add it to requirements.txt? (y/n)')
+            CLIPPrinter.yellow(f'package {p}: found in py files that are not test files. Would you like to add it to requirements.txt? (y/n)')
             if input().lower() == 'y':
                 pi.new_requirements_packages.add(p)
                 new_standard_packages_to_be_included_text += 'added'
@@ -154,12 +162,17 @@ def get_requirements(folder_path:str = None, write_requirements_file:bool = True
     if write_requirements_file:
         FileHandler.write({requirements_file_path: '\n'.join(sorted(pi.new_requirements_packages))})
 
-    dev_packages_not_needed_anymore = [k for k,v in pi.packages_in_files.items() if (not v.files or v.is_standard_module) and v.is_on_requirements_dev_file]
+    dev_packages_not_needed_anymore = {k:v for k,v in pi.packages_in_files.items() if (not v.files or v.is_standard_module) and v.is_on_requirements_dev_file}
     if dev_packages_not_needed_anymore:
         dev_packages_not_needed_anymore_text = ""
         for p in sorted(dev_packages_not_needed_anymore):
-            dev_packages_not_needed_anymore_text = f'\n--{p}: '
-            CLIPPrinter.cyan(f'{p}: Would you like to remove it from requirements_dev.txt? (y/n)')
+            warn_text = 'Not found in py files that are not test files'
+            is_standard_warn_text = ''
+            if dev_packages_not_needed_anymore[p].is_standard_module:
+                warn_text = 'Is a standard python package and so, there is no need to be in requirements_dev.txt'
+                is_standard_warn_text = "(standard python module)"
+            dev_packages_not_needed_anymore_text += f'\n--{p}{is_standard_warn_text}: '
+            CLIPPrinter.yellow(f'package {p}: {warn_text}. Would you like to remove it from requirements_dev.txt? (y/n)')
             if input().lower() == 'y':
                 pi.new_requirements_dev_packages.remove(p)
                 dev_packages_not_needed_anymore_text += 'removed'
@@ -170,7 +183,7 @@ def get_requirements(folder_path:str = None, write_requirements_file:bool = True
         new_dev_packages_to_be_included_text = ''
         for p in sorted(new_dev_packages_to_be_included):
             new_dev_packages_to_be_included_text += f'\n--{p}: '
-            CLIPPrinter.cyan(f'{p}: Would you like to add it to requirements_dev.txt? (y/n)')
+            CLIPPrinter.cyan(f'package {p}: found in py files. Would you like to add it to requirements_dev.txt? (y/n)')
             if input().lower() == 'y':
                 pi.new_requirements_dev_packages.add(p)
                 new_dev_packages_to_be_included_text += 'added'
@@ -213,7 +226,7 @@ def cli():
         write_requirements_file=not args.dw,
         requirements_file_path=args.rf,
         requirements_dev_file_path=args.rdf,
-        write_requirements_generated=args.dwg
+        write_requirements_generated=not args.dwg
     )
 
 if __name__ == '__main__':
